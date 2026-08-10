@@ -10,6 +10,9 @@ from homeassistant.const import CONF_HOST, CONF_PASSWORD, CONF_USERNAME
 from homeassistant.data_entry_flow import FlowResult
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.selector import (
+    SelectSelector,
+    SelectSelectorConfig,
+    SelectSelectorMode,
     TextSelector,
     TextSelectorConfig,
     TextSelectorType,
@@ -17,18 +20,23 @@ from homeassistant.helpers.selector import (
 
 from .const import (
     CONF_CHANNELS,
+    CONF_EVENT_AUTO_OFF,
+    CONF_EVENT_CODES,
     CONF_HTTP_PORT,
     CONF_RTSP_PORT,
     CONF_RTSP_SUBTYPE,
     CONF_SCAN_INTERVAL,
     CONF_TRACK_BY_MAC,
     DEFAULT_CHANNELS,
+    DEFAULT_EVENT_AUTO_OFF,
+    DEFAULT_EVENT_CODES,
     DEFAULT_HTTP_PORT,
     DEFAULT_RTSP_PORT,
     DEFAULT_RTSP_SUBTYPE,
     DEFAULT_SCAN_INTERVAL,
     DEFAULT_USERNAME,
     DOMAIN,
+    EVENT_CODES,
 )
 from .dvr import IntelbrasClient, discover_mac
 
@@ -54,6 +62,18 @@ def _user_schema(defaults: dict | None = None) -> vol.Schema:
             vol.Optional(
                 CONF_HTTP_PORT, default=d.get(CONF_HTTP_PORT, DEFAULT_HTTP_PORT)
             ): vol.All(vol.Coerce(int), vol.Range(min=1, max=65535)),
+            vol.Optional(
+                CONF_EVENT_CODES, default=d.get(CONF_EVENT_CODES, DEFAULT_EVENT_CODES)
+            ): SelectSelector(
+                SelectSelectorConfig(
+                    options=EVENT_CODES,
+                    multiple=True,
+                    mode=SelectSelectorMode.DROPDOWN,
+                )
+            ),
+            vol.Optional(
+                CONF_EVENT_AUTO_OFF, default=d.get(CONF_EVENT_AUTO_OFF, DEFAULT_EVENT_AUTO_OFF)
+            ): vol.All(vol.Coerce(int), vol.Range(min=0, max=600)),
             vol.Optional(CONF_TRACK_BY_MAC, default=d.get(CONF_TRACK_BY_MAC, True)): cv.boolean,
             vol.Optional(
                 CONF_SCAN_INTERVAL, default=d.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
@@ -128,6 +148,18 @@ class OptionsFlow(config_entries.OptionsFlow):
                 vol.Optional(
                     CONF_HTTP_PORT, default=merged.get(CONF_HTTP_PORT, DEFAULT_HTTP_PORT)
                 ): vol.All(vol.Coerce(int), vol.Range(min=1, max=65535)),
+                vol.Optional(
+                    CONF_EVENT_CODES, default=merged.get(CONF_EVENT_CODES, DEFAULT_EVENT_CODES)
+                ): SelectSelector(
+                    SelectSelectorConfig(
+                        options=EVENT_CODES,
+                        multiple=True,
+                        mode=SelectSelectorMode.DROPDOWN,
+                    )
+                ),
+                vol.Optional(
+                    CONF_EVENT_AUTO_OFF, default=merged.get(CONF_EVENT_AUTO_OFF, DEFAULT_EVENT_AUTO_OFF)
+                ): vol.All(vol.Coerce(int), vol.Range(min=0, max=600)),
                 vol.Optional(
                     CONF_TRACK_BY_MAC, default=merged.get(CONF_TRACK_BY_MAC, True)
                 ): cv.boolean,

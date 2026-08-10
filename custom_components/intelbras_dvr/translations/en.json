@@ -13,7 +13,9 @@
           "track_by_mac": "Rastrear IP pelo MAC",
           "scan_interval": "Intervalo de verificação (s)",
           "rtsp_subtype": "Subtipo RTSP (0=principal, 1=substream)",
-          "http_port": "Porta HTTP"
+          "http_port": "Porta HTTP",
+          "event_codes": "Events to monitor",
+          "event_auto_off": "Event auto-off (s, 0 = disabled)"
         }
       }
     },
@@ -34,7 +36,9 @@
           "track_by_mac": "Rastrear IP pelo MAC",
           "scan_interval": "Intervalo de verificação (s)",
           "rtsp_subtype": "Subtipo RTSP (0=principal, 1=substream)",
-          "http_port": "Porta HTTP"
+          "http_port": "Porta HTTP",
+          "event_codes": "Events to monitor",
+          "event_auto_off": "Event auto-off (s, 0 = disabled)"
         }
       }
     }

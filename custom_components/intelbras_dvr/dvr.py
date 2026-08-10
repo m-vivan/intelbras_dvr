@@ -14,6 +14,7 @@ import httpx
 
 from .const import (
     DEFAULT_HTTP_PORT,
+    EVENTMANAGER_CGI,
     DEFAULT_RTSP_PORT,
     LOGIN_LOCKOUT_BACKOFF,
     MEDIAFILEFIND_CGI,
@@ -27,6 +28,12 @@ _MAC_RE = re.compile(r"([0-9a-f]{2}:){5}[0-9a-f]{2}", re.IGNORECASE)
 
 # linhas "items[N].Campo=valor" (ou "items[N].Campo[i]=valor") do findNextFile
 _ITEM_RE = re.compile(r"^items\[(\d+)\]\.([A-Za-z]+)(?:\[\d+\])?=(.*)$")
+
+# linhas de cabeçalho do stream do eventManager:
+# Code=VideoMotion;action=Start;index=2;data={...}
+_EVENT_RE = re.compile(
+    r"Code=(?P<code>\w+);action=(?P<action>\w+);index=(?P<index>\d+)"
+)
 _FIND_TIME_FMT = "%Y-%m-%d %H:%M:%S"
 _PLAYBACK_TIME_FMT = "%Y_%m_%d_%H_%M_%S"
 _FIND_PAGE_SIZE = 100
@@ -34,6 +41,19 @@ _FIND_PAGE_SIZE = 100
 
 class RecordingsError(Exception):
     """Falha na consulta de gravações do DVR."""
+
+
+class EventStreamError(Exception):
+    """Falha ao abrir/manter o stream de eventos do DVR."""
+
+
+@dataclass
+class DvrEvent:
+    """Um evento reportado pelo eventManager."""
+
+    code: str
+    channel: int  # 1-based, já convertido do index 0-based do DVR
+    active: bool  # True em Start, False em Stop
 
 
 @dataclass
@@ -112,6 +132,48 @@ class IntelbrasClient:
         # reset backoff em sucesso
         self._lockout_until = 0.0
         return ProbeResult(True, 200, size)
+
+    async def stream_events(self, codes: list[str], timeout: float = 10.0):
+        """Async generator de DvrEvent a partir do eventManager (multipart, push).
+
+        Abre uma conexão de longa duração; cada cabeçalho recebido vira um
+        DvrEvent. Levanta EventStreamError se a conexão falhar ou for
+        encerrada pelo DVR — quem chama decide o backoff.
+        """
+        loop = asyncio.get_running_loop()
+        if loop.time() < self._lockout_until:
+            raise EventStreamError("lockout local ativo")
+
+        url = self.base + EVENTMANAGER_CGI.format(codes=",".join(codes))
+        try:
+            async with httpx.AsyncClient(
+                timeout=httpx.Timeout(timeout, read=None),
+                auth=httpx.DigestAuth(self.username, self.password),
+                verify=False,
+            ) as cli:
+                async with cli.stream("GET", url) as resp:
+                    if resp.status_code == 401:
+                        self._lockout_until = loop.time() + LOGIN_LOCKOUT_BACKOFF
+                        raise EventStreamError("401 (credencial ou banimento)")
+                    if resp.status_code != 200:
+                        raise EventStreamError(f"HTTP {resp.status_code}")
+                    self._lockout_until = 0.0
+                    async for line in resp.aiter_lines():
+                        match = _EVENT_RE.search(line)
+                        if match is None:
+                            continue
+                        yield DvrEvent(
+                            code=match["code"],
+                            channel=int(match["index"]) + 1,
+                            active=match["action"] == "Start",
+                        )
+        except EventStreamError:
+            raise
+        except asyncio.CancelledError:
+            raise
+        except Exception as ex:  # noqa: BLE001
+            raise EventStreamError(str(ex)) from ex
+        raise EventStreamError("stream encerrado pelo DVR")
 
     async def snapshot(self, channel: int = 1, timeout: float = 12.0) -> Optional[bytes]:
         """Devolve bytes do JPEG, ou None."""

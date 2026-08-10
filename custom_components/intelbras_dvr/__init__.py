@@ -14,14 +14,18 @@ import homeassistant.helpers.config_validation as cv
 
 from .apply_helper import apply_credentials
 from .const import (
+    CONF_EVENT_CODES,
     CONF_HTTP_PORT,
     DATA_COORDINATOR,
+    DATA_LISTENER,
+    DEFAULT_EVENT_CODES,
     DEFAULT_HTTP_PORT,
     DOMAIN,
     PLATFORMS,
 )
 from .coordinator import IntelbrasCoordinator
 from .dvr import IntelbrasClient
+from .event_listener import IntelbrasEventListener
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -107,12 +111,25 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data[DOMAIN][entry.entry_id][DATA_COORDINATOR] = coordinator
     hass.data[DOMAIN][entry.entry_id]["client"] = client
 
+    codes = entry.options.get(
+        CONF_EVENT_CODES, entry.data.get(CONF_EVENT_CODES, DEFAULT_EVENT_CODES)
+    )
+    listener = IntelbrasEventListener(hass, entry, client, codes)
+    hass.data[DOMAIN][entry.entry_id][DATA_LISTENER] = listener
+
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    listener.start()
     entry.async_on_unload(entry.add_update_listener(_update_listener))
     return True
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    listener: IntelbrasEventListener | None = hass.data[DOMAIN].get(
+        entry.entry_id, {}
+    ).get(DATA_LISTENER)
+    if listener is not None:
+        await listener.stop()
+
     ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if ok:
         hass.data[DOMAIN].pop(entry.entry_id, None)
