@@ -10,6 +10,9 @@
 > respective owners. This is an unofficial community integration with no
 > affiliation, endorsement or support from Intelbras S.A. or Dahua Technology.
 
+> Fork of [Constantini21/intelbras_dvr](https://github.com/Constantini21/intelbras_dvr),
+> where most of this code comes from. Original MIT license preserved.
+
 Custom Home Assistant integration for **Intelbras / Dahua** DVRs, featuring:
 
 - 🎥 Cameras via HTTP snapshot (digest auth) + RTSP stream — one entity per channel.
@@ -51,7 +54,7 @@ Notes:
 
 ### Via HACS (recommended)
 1. HACS → menu (⋮) → **Custom repositories**.
-2. URL: `https://github.com/Constantini21/intelbras_dvr` (category *Integration*).
+2. URL: `https://github.com/m-vivan/intelbras_dvr` (category *Integration*).
 3. Install **Intelbras DVR** and restart Home Assistant.
 4. Settings → Devices & Services → **Add Integration** → "Intelbras DVR".
 

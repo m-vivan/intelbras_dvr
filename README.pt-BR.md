@@ -10,6 +10,9 @@
 > proprietários. Esta é uma integração comunitária não-oficial, sem qualquer
 > afiliação, endosso ou suporte da Intelbras S.A. ou Dahua Technology.
 
+> Fork de [Constantini21/intelbras_dvr](https://github.com/Constantini21/intelbras_dvr),
+> de onde vem a maior parte deste código. Licença MIT original preservada.
+
 Integração customizada do Home Assistant para DVRs **Intelbras / Dahua** com:
 
 - 🎥 Câmeras via snapshot HTTP (digest) + stream RTSP — uma entidade por canal.
@@ -51,7 +54,7 @@ Notas:
 
 ### Via HACS (recomendado)
 1. HACS → menu (⋮) → **Custom repositories**.
-2. URL: `https://github.com/Constantini21/intelbras_dvr` (categoria *Integration*).
+2. URL: `https://github.com/m-vivan/intelbras_dvr` (categoria *Integration*).
 3. Instalar **Intelbras DVR** e reiniciar o HA.
 4. Settings → Devices & Services → **Add Integration** → "Intelbras DVR".
 
