@@ -28,6 +28,8 @@ from .dvr import DvrEvent
 # Rótulos em português por código de evento
 _CODE_LABELS: dict[str, str] = {
     "VideoMotion": "Movimento",
+    "SmartMotionHuman": "Detecção de pessoa",
+    "SmartMotionVehicle": "Detecção de veículo",
     "CrossLineDetection": "Cruzamento de linha",
     "CrossRegionDetection": "Invasão de região",
     "VideoLoss": "Perda de vídeo",
@@ -37,6 +39,10 @@ _CODE_LABELS: dict[str, str] = {
 
 _CODE_DEVICE_CLASS: dict[str, BinarySensorDeviceClass] = {
     "VideoMotion": BinarySensorDeviceClass.MOTION,
+    # SMD é detecção de objeto, não de pixel. OCCUPANCY separa os dois na UI
+    # e nas automações, que é exatamente o ponto de assinar estes códigos.
+    "SmartMotionHuman": BinarySensorDeviceClass.OCCUPANCY,
+    "SmartMotionVehicle": BinarySensorDeviceClass.OCCUPANCY,
     "CrossLineDetection": BinarySensorDeviceClass.MOTION,
     "CrossRegionDetection": BinarySensorDeviceClass.MOTION,
     "VideoLoss": BinarySensorDeviceClass.PROBLEM,
