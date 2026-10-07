@@ -2,19 +2,19 @@
   "domain": "intelbras_dvr",
   "name": "Intelbras DVR",
   "codeowners": [
-    "@Constantini21"
+    "@m-vivan"
   ],
   "config_flow": true,
   "dependencies": [
     "media_source",
     "stream"
   ],
-  "documentation": "https://github.com/Constantini21/intelbras_dvr",
+  "documentation": "https://github.com/m-vivan/intelbras_dvr",
   "integration_type": "device",
   "iot_class": "local_push",
-  "issue_tracker": "https://github.com/Constantini21/intelbras_dvr/issues",
+  "issue_tracker": "https://github.com/m-vivan/intelbras_dvr/issues",
   "requirements": [
     "httpx>=0.24"
   ],
-  "version": "0.3.0"
+  "version": "0.4.0"
 }
