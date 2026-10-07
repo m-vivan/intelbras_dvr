@@ -44,8 +44,29 @@ DATA_LISTENER = "listener"
 LOGIN_LOCKOUT_BACKOFF = 300  # 5 min
 
 # Códigos de evento suportados pelo eventManager (attach)
+# SmartMotionHuman / SmartMotionVehicle são o SMD (Smart Motion Detection) do
+# aparelho: o DVR levanta VideoMotion para QUALQUER mudança de pixel e, alguns
+# segundos depois, emite um destes dois se o classificador reconhecer pessoa
+# ou veículo. Medido num MHDX 3116-C (firmware 4.001.00IB000.0.T):
+#
+#   13:55:47  VideoMotion       Start  canal 2
+#   13:55:52  SmartMotionHuman  Start  canal 2
+#   13:56:06  SmartMotionHuman  Stop   canal 2
+#
+# A diferença de volume é a razão de isto existir: na mesma instalação os 4
+# canais somaram ~9.500 VideoMotion em 48h. Quem automatiza em cima de
+# VideoMotion processa quase só árvore balançando e sombra passando.
+#
+# Exige SMD ligado no aparelho. Confira em:
+#   /cgi-bin/configManager.cgi?action=getConfig&name=SmartMotionDetect
+#     table.SmartMotionDetect[N].Enable=true
+#     table.SmartMotionDetect[N].ObjectTypes.Human=true
+# Canal com SMD desligado nunca emite o evento — sem erro e sem aviso, o
+# sensor fica em 'off' para sempre.
 EVENT_CODES = [
     "VideoMotion",
+    "SmartMotionHuman",
+    "SmartMotionVehicle",
     "CrossLineDetection",
     "CrossRegionDetection",
     "VideoLoss",
